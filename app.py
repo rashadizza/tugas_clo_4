@@ -93,7 +93,15 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
 # Streamlit web
 st.set_page_config(page_title="Prediksi Harga Saham Aneka Tambang Tbk PT", page_icon=":chart_with_upwards_trend:")
 st.title('Prediksi Harga Saham (ANTM)')
-st.write('Disusun Oleh Grup 7')
+st.header('Disusun Oleh Grup 7')
+st.subheader(
+  """
+  -
+  -
+  -
+  -
+  """
+)
 
 # Load data
 data, features = load_data()
