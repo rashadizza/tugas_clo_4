@@ -71,7 +71,7 @@ def calculate_confidence_intervals(paths, confidence_level=0.95):
     return lower_bounds, upper_bounds
 
 # Streamlit app
-st.title('Prediksi Harga Saham')
+st.title('Prediksi Harga Saham (ANTM)')
 st.write('Disusun Oleh Grup 7')
 
 # Load data
