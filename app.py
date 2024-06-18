@@ -116,14 +116,6 @@ mse, r2 = evaluate_performance(simulated_paths[0], actual_prices)
 st.write(f"Mean Squared Error (MSE): {mse:.4f}")
 st.write(f"R-squared (R²): {r2:.4f}")
 
-# Display predicted prices in a table for all simulations
-results_df = pd.DataFrame(simulated_paths).transpose()
-results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
-st.write(results_df)
-
-# Call save results function
-save_results_to_csv(results_df)
-
 # Plot results and confidence intervals
 labels = ['Predicted Drift', 'Actual Drift', 'Absolute Error']
 fig, ax = plt.subplots(1, 3, figsize=(12, 4))
@@ -148,6 +140,13 @@ st.pyplot(fig)
 # Calculate confidence intervals
 all_simulated_paths = np.array(simulated_paths)
 lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
+
+# Display predicted prices in a table for all simulations
+results_df = pd.DataFrame(simulated_paths).transpose()
+results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
+st.write(results_df)
+
+save_results_to_csv(results_df)
 
 # Plot results with confidence intervals
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
