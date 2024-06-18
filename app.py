@@ -70,6 +70,24 @@ def calculate_confidence_intervals(paths, confidence_level=0.95):
     upper_bounds = np.percentile(paths, upper_percentile, axis=0)
     return lower_bounds, upper_bounds
 
+# Save results to CSV function
+def save_results_to_csv(results_df):
+    csv_file = st.button('Save results to CSV')
+    if csv_file:
+        file_path = st.text_input('Enter file path to save CSV', 'predicted_results.csv')
+        with open(file_path, 'w') as f:
+            results_df.to_csv(f, index=False)
+        st.success(f'Results saved to {file_path}')
+        st.markdown(get_binary_file_downloader_html(file_path, 'CSV file'), unsafe_allow_html=True)
+
+# Function to download CSV
+def get_binary_file_downloader_html(bin_file, file_label='File'):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    bin_str = base64.b64encode(data).decode()
+    href = f'<a href="data:file/csv;base64,{bin_str}" download="{os.path.basename(bin_file)}">{file_label}</a>'
+    return href
+
 # Streamlit app
 st.title('Prediksi Harga Saham (ANTM)')
 st.write('Disusun Oleh Grup 7')
@@ -101,17 +119,10 @@ results_df = pd.DataFrame(simulated_paths).transpose()
 results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
 st.write(results_df)
 
-# Save results to CSV function
-def save_results_to_csv(results_df):
-    csv_file = st.button('Save results to CSV')
-    if csv_file:
-        file_path = st.text_input('Enter file path to save CSV', 'predicted_results.csv')
-        results_df.to_csv(file_path, index=False)
-        st.success(f'Results saved to {file_path}')
-
 # Call save results function
 save_results_to_csv(results_df)
 
+# Plot results and confidence intervals
 labels = ['Predicted Drift', 'Actual Drift', 'Absolute Error']
 fig, ax = plt.subplots(1, 3, figsize=(12, 4))
 ax[0].plot(drifts, label='Predicted Drift', color='blue')
@@ -136,9 +147,8 @@ st.pyplot(fig)
 all_simulated_paths = np.array(simulated_paths)
 lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 
-# Plot results
+# Plot results with confidence intervals
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
-
 fig, ax = plt.subplots(figsize=(10, 6))
 for i, path in enumerate(simulated_paths):
     ax.plot(index, path, label=f'Predicted {i+1}', alpha=0.3)
@@ -151,6 +161,7 @@ ax.grid(True)
 ax.legend()
 st.pyplot(fig)
 
+# Plot absolute and relative errors
 fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 ax[0].plot(index, [abs(i - j) for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
 ax[0].set_title('Absolute Error of Prediction Price')
