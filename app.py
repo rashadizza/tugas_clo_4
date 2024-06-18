@@ -152,14 +152,14 @@ lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 
 
 # Display predicted prices in a table for all simulations
-st.write('Simulated Stock Price Table')
+st.header('Simulated Stock Price Table')
 results_df = pd.DataFrame(simulated_paths).transpose()
 results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
 st.write(results_df)
 
 save_results_to_csv(results_df)
 
-st.write('Simulated Stock Price Paths')
+st.header('Simulated Stock Price Paths')
 # Plot results with confidence intervals
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 fig, ax = plt.subplots(figsize=(10, 6))
