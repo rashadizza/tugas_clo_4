@@ -7,6 +7,8 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import ta_py as ta
 import streamlit as st
+import base64
+import os
 
 # Define constants
 scaler = MinMaxScaler()
