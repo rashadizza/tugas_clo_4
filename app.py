@@ -105,14 +105,6 @@ st.write(f"R-squared (R²): {r2:.4f}")
 all_simulated_paths = np.array(simulated_paths)
 lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 
-fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-ax[0].plot(index, [abs(i - j) for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
-ax[0].set_title('Absolute Error of Prediction Price')
-ax[1].plot(index, [abs(i - j) / j * 100 for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
-ax[1].set_title('Relative Absolute Error of Prediction Price (in %)')
-_ = [ax[i].tick_params(axis='x', labelrotation=40) for i in [0, 1]]
-st.pyplot(fig)
-
 # Plot results
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 
