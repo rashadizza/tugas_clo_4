@@ -1,4 +1,3 @@
-
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import MinMaxScaler
@@ -47,21 +46,18 @@ def calculate_volatility(data):
     return annualized_volatility
 
 # GBM simulation function
-def gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data, num_simulations):
+def gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data):
     dt = 1
     actual = [spot_price] + list(data['Adj Close'].iloc[:].values)
     drift = model.predict(scaler.fit_transform(data.loc[:][features]))
-    all_paths = []
+    paths = [spot_price]
+    
+    for i in range(1, time_horizon + 1):
+        if i >= len(data):
+            break
+        paths.append(actual[i] * np.exp((drift[i-1] - 0.5 * (volatility/252)**2) * dt + (volatility/252) * np.random.normal(scale=np.sqrt(1/252))))
 
-    for _ in range(num_simulations):
-        paths = [spot_price]
-        for i in range(1, time_horizon + 1):
-            if i >= len(data):
-                break
-            paths.append(actual[i] * np.exp((drift[i-1] - 0.5 * (volatility/252)**2) * dt + (volatility/252) * np.random.normal(scale=np.sqrt(1/252))))
-        all_paths.append(paths)
-
-    return all_paths, drift
+    return paths, drift
 
 # Streamlit app
 st.title('Prediksi Harga Saham')
@@ -80,38 +76,36 @@ spot_price = data["Adj Close"].iloc[steps - 1]
 volatility = calculate_volatility(data.iloc[0:steps])
 
 # Sidebar inputs
-num_simulations = st.sidebar.number_input('Number of Simulations', min_value=1, max_value=100, value=5)
 time_horizon = st.sidebar.number_input('Time Horizon (days)', min_value=1, max_value=252, value=252)
 
 # Simulate paths
-simulated_paths, drifts = gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data.iloc[steps:], num_simulations)
+simulated_path, drifts = gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data.iloc[steps:])
 
 # Trim data['Adj Close'] to match simulated_paths length
-actual_prices = data['Adj Close'][steps - 1:steps - 1 + len(simulated_paths[0])].values
+actual_prices = data['Adj Close'][steps - 1:steps - 1 + len(simulated_path)].values
 
 # Evaluate model performance
-mse, r2 = evaluate_performance(simulated_paths[0], actual_prices)
+mse, r2 = evaluate_performance(simulated_path, actual_prices)
 st.write(f"Mean Squared Error (MSE): {mse:.4f}")
 st.write(f"R-squared (R²): {r2:.4f}")
 
 # Plot results
-index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
+index = data.index[steps - 1:steps - 1 + len(simulated_path)]
 
 fig, ax = plt.subplots(figsize=(10, 6))
-for i, path in enumerate(simulated_paths):
-    ax.plot(index, path, label=f'Simulation {i+1}')
+ax.plot(index, simulated_path, label='Simulation', alpha=0.7)
 ax.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
 ax.set_xlabel("Time Step")
 ax.set_ylabel("Stock Price")
-ax.set_title("Simulated Stock Price Paths")
+ax.set_title("Simulated vs Actual Stock Price")
 ax.grid(True)
 ax.legend()
 st.pyplot(fig)
 
-fig, ax = plt.subplots(1, 2, figsize=(12, 6))
-ax[0].plot(index, [abs(i - j) for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
-ax[0].set_title('Absolute Error of Prediction Price')
-ax[1].plot(index, [abs(i - j) / j * 100 for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
-ax[1].set_title('Relative Absolute Error of Prediction Price (in %)')
-_ = [ax[i].tick_params(axis='x', labelrotation=40) for i in [0, 1]]
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.plot(index, [abs(i - j) for (i, j) in zip(simulated_path, actual_prices)], '.-')
+ax.set_title('Absolute Error of Prediction Price')
+ax.set_xlabel("Time Step")
+ax.set_ylabel("Absolute Error")
+ax.grid(True)
 st.pyplot(fig)
