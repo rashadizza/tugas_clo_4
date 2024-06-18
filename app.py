@@ -112,7 +112,7 @@ volatility = calculate_volatility(data.iloc[0:steps])
 
 # Sidebar inputs
 num_simulations = st.sidebar.number_input('Number of Simulations', min_value=1, max_value=100, value=5)
-time_horizon = st.sidebar.number_input('Time Horizon (days)', min_value=1, max_value=252, value=252)
+time_horizon = st.sidebar.number_input('Time Period (days)', min_value=1, max_value=252, value=252)
 
 # Simulate paths
 simulated_paths, drifts = gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data.iloc[steps:], num_simulations)
@@ -150,13 +150,16 @@ st.pyplot(fig)
 all_simulated_paths = np.array(simulated_paths)
 lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 
+
 # Display predicted prices in a table for all simulations
+st.write('Simulated Stock Price Table')
 results_df = pd.DataFrame(simulated_paths).transpose()
 results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
 st.write(results_df)
 
 save_results_to_csv(results_df)
 
+st.write('Simulated Stock Price Paths')
 # Plot results with confidence intervals
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 fig, ax = plt.subplots(figsize=(10, 6))
