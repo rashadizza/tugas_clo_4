@@ -128,24 +128,17 @@ lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 # Plot results
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 
-harga_pred=simulated_paths
-harga_act = data['Adj Close'][steps-1:].values
-plt.figure(figsize=(10, 6))
-index = data.index[steps-1:]
-plt.plot(index,harga_pred, label='predicted')
-plt.plot(index,harga_act, label='actual')
-plt.xlabel("Time Step")
-plt.ylabel("Stock Price")
-plt.title("Simulated Stock Price Paths")
-plt.grid(True)
-plt.legend()
-plt.show()
-fig,ax =plt.subplots(1,2, figsize=(10,4))
-ax[0].plot(index, [abs(i-j) for (i,j) in zip(harga_pred,harga_act)], '.-')
-ax[0].set_title('absolut error of prediction price')
-ax[1].plot(index, [abs(i-j)/j*100 for (i,j) in zip(harga_pred,harga_act)], '.-')
-ax[1].set_title('relative absolute error of prediction price (in %)')
-_ = [ax[i].tick_params(axis='x', labelrotation=40) for i in [0,1]]
+fig, ax = plt.subplots(figsize=(10, 6))
+for i, path in enumerate(simulated_paths):
+ax.plot(index, path, label='Simulation', alpha=0.3)
+ax.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
+ax.fill_between(index, lower_bounds, upper_bounds, color='grey', alpha=0.2, label='95% Confidence Interval')
+ax.set_xlabel("Time Step")
+ax.set_ylabel("Stock Price")
+ax.set_title("Simulated Stock Price Paths")
+ax.grid(True)
+ax.legend()
+st.pyplot(fig)
 
 fig, ax = plt.subplots(1, 2, figsize=(12, 6))
 ax[0].plot(index, [abs(i - j) for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
