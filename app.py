@@ -7,7 +7,6 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import ta_py as ta
 import streamlit as st
-import os
 
 # Define constants
 scaler = MinMaxScaler()
@@ -97,7 +96,7 @@ mse, r2 = evaluate_performance(simulated_paths[0], actual_prices)
 st.write(f"Mean Squared Error (MSE): {mse:.4f}")
 st.write(f"R-squared (R²): {r2:.4f}")
 
-# Display predicted prices in a table
+# Display predicted prices in a table for all simulations
 results_df = pd.DataFrame(simulated_paths).transpose()
 results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
 st.write(results_df)
@@ -110,6 +109,7 @@ def save_results_to_csv(results_df):
         results_df.to_csv(file_path, index=False)
         st.success(f'Results saved to {file_path}')
 
+# Call save results function
 save_results_to_csv(results_df)
 
 labels = ['Predicted Drift', 'Actual Drift', 'Absolute Error']
