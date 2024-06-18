@@ -129,7 +129,7 @@ lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 
 fig, ax = plt.subplots(figsize=(10, 6))
-ax.plot(index, path, label='Simulation', alpha=0.3)
+ax.plot(index, all_simulated_paths, label='Simulation', alpha=0.3)
 ax.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
 ax.fill_between(index, lower_bounds, upper_bounds, color='grey', alpha=0.2, label='95% Confidence Interval')
 ax.set_xlabel("Time Step")
