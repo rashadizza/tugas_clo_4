@@ -112,7 +112,7 @@ volatility = calculate_volatility(data.iloc[0:steps])
 
 # Sidebar inputs
 num_simulations = st.sidebar.number_input('Number of Simulations', min_value=1, max_value=100, value=5)
-time_horizon = st.sidebar.number_input('Time Period (days)', min_value=1, max_value=252, value=252)
+time_horizon = st.sidebar.number_input('Time (days)', min_value=1, max_value=252, value=252)
 
 # Simulate paths
 simulated_paths, drifts = gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data.iloc[steps:], num_simulations)
