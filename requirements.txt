@@ -5,5 +5,3 @@ yfinance
 matplotlib
 ta_py
 streamlit
-base64
-os
