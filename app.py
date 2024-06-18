@@ -104,7 +104,7 @@ st.write(f"R-squared (R²): {r2:.4f}")
 labels = ['Predicted Drift', 'Actual Drift', 'Absolute Error']
 fig, ax = plt.subplots(1, 3, figsize=(12, 4))
 ax[0].plot(drifts, label='Predicted Drift', color='blue')
-ax[0].set_title('Predicted vs Actual Drift')
+ax[0].set_title('Predicted Drift')
 ax[0].set_xlabel('Time Step')
 ax[0].legend()
 
