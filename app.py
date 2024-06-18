@@ -91,7 +91,7 @@ def get_binary_file_downloader_html(bin_file, file_label='File'):
     return href
 
 # Streamlit web
-st.set_page_config(layout="wide", page_title="Prediksi Harga Saham Aneka Tambang Tbk PT", page_icon=":chart_with_upwards_trend:")
+st.set_page_config(page_title="Prediksi Harga Saham Aneka Tambang Tbk PT", page_icon=":chart_with_upwards_trend:")
 st.title('Prediksi Harga Saham (ANTM)')
 st.write('Disusun Oleh Grup 7')
 
