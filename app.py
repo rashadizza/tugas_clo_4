@@ -128,10 +128,3 @@ ax[1].set_title('Relative Absolute Error of Prediction Price (in %)')
 _ = [ax[i].tick_params(axis='x', labelrotation=40) for i in [0, 1]]
 st.pyplot(fig)
 
-labels =['predicted drift', 'actual drift', 'absolute error']
-fig,ax =plt.subplots(1,3, figsize=(10,2))
-ax[0].plot(drifts)
-ax[1].plot(data['return'].iloc[steps:].values)
-ax[2].plot([abs(i-j) for (i,j) in zip(drifts,data['return'].iloc[steps:].values)])
-_ =[ax[i].set_title(j) for (i,j) in enumerate(labels)]
-
