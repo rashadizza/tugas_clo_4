@@ -7,6 +7,7 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import ta_py as ta
 import streamlit as st
+import os
 
 # Define constants
 scaler = MinMaxScaler()
@@ -73,11 +74,6 @@ def calculate_confidence_intervals(paths, confidence_level=0.95):
 # Streamlit app
 st.title('Prediksi Harga Saham')
 st.write('Disusun Oleh Grup 7')
-st.write(
-  """
-  - rashad
-  """
-)
 
 # Load data
 data, features = load_data()
@@ -100,6 +96,21 @@ actual_prices = data['Adj Close'][steps - 1:steps - 1 + len(simulated_paths[0])]
 mse, r2 = evaluate_performance(simulated_paths[0], actual_prices)
 st.write(f"Mean Squared Error (MSE): {mse:.4f}")
 st.write(f"R-squared (R²): {r2:.4f}")
+
+# Display predicted prices in a table
+results_df = pd.DataFrame(simulated_paths).transpose()
+results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
+st.write(results_df)
+
+# Save results to CSV function
+def save_results_to_csv(results_df):
+    csv_file = st.button('Save results to CSV')
+    if csv_file:
+        file_path = st.text_input('Enter file path to save CSV', 'predicted_results.csv')
+        results_df.to_csv(file_path, index=False)
+        st.success(f'Results saved to {file_path}')
+
+save_results_to_csv(results_df)
 
 labels = ['Predicted Drift', 'Actual Drift', 'Absolute Error']
 fig, ax = plt.subplots(1, 3, figsize=(12, 4))
