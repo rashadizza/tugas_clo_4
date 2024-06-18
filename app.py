@@ -14,7 +14,7 @@ period = 5
 
 # Load data function
 def load_data():
-    data = yf.download("BBCA.JK", start="2021-01-01", end="2023-12-31")
+    data = yf.download("ANTM.JK", start="2021-01-01", end="2023-12-31")
     data = data.interpolate(method='linear')
     data['return'] = [None] + [np.log(i / j) for (i, j) in zip(data['Close'][1:], data['Close'][0:-1])]
     data['sma'] = [None for _ in range(period - 1)] + list(ta.sma(data['Adj Close'], period))
@@ -127,3 +127,11 @@ ax[1].plot(index, [abs(i - j) / j * 100 for (i, j) in zip(simulated_paths[0], ac
 ax[1].set_title('Relative Absolute Error of Prediction Price (in %)')
 _ = [ax[i].tick_params(axis='x', labelrotation=40) for i in [0, 1]]
 st.pyplot(fig)
+
+labels =['predicted drift', 'actual drift', 'absolute error']
+fig,ax =plt.subplots(1,3, figsize=(10,2))
+ax[0].plot(drifts)
+ax[1].plot(data['return'].iloc[steps:].values)
+ax[2].plot([abs(i-j) for (i,j) in zip(drifts,data['return'].iloc[steps:].values)])
+_ =[ax[i].set_title(j) for (i,j) in enumerate(labels)]
+
