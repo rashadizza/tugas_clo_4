@@ -108,37 +108,22 @@ lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 # Plot results
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 
-# Plot simulated and actual stock prices
-plt.figure(figsize=(10, 6))
-plt.plot(index, simulated_paths[0], label='Predicted')
-plt.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
-plt.xlabel("Time Step")
-plt.ylabel("Stock Price")
-plt.title("Simulated vs Actual Stock Price Paths")
-plt.grid(True)
-plt.legend()
-st.pyplot()
+fig, ax = plt.subplots(figsize=(10, 6))
+for i, path in enumerate(simulated_paths):
+    ax.plot(index, path, label=f'Simulation {i+1}', alpha=0.3)
+ax.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
+ax.fill_between(index, lower_bounds, upper_bounds, color='grey', alpha=0.2, label='95% Confidence Interval')
+ax.set_xlabel("Time Step")
+ax.set_ylabel("Stock Price")
+ax.set_title("Simulated Stock Price Paths")
+ax.grid(True)
+ax.legend()
+st.pyplot(fig)
 
-# Plot drifts and errors
-labels = ['Predicted Drift', 'Actual Drift', 'Absolute Error']
-fig, ax = plt.subplots(1, 3, figsize=(15, 4))
-ax[0].plot(drifts, label='Predicted Drift')
-ax[0].set_title('Predicted Drift')
-ax[0].set_xlabel('Time Step')
-ax[0].set_ylabel('Drift Value')
-ax[0].legend()
-
-ax[1].plot(data['return'].iloc[steps:].values, label='Actual Drift', color='green')
-ax[1].set_title('Actual Drift')
-ax[1].set_xlabel('Time Step')
-ax[1].set_ylabel('Drift Value')
-ax[1].legend()
-
-ax[2].plot(index, [abs(i - j) for (i, j) in zip(drifts, data['return'].iloc[steps:].values)], '.-')
-ax[2].set_title('Absolute Error of Drift Prediction')
-ax[2].set_xlabel('Time Step')
-ax[2].set_ylabel('Absolute Error')
-ax[2].tick_params(axis='x', rotation=40)
-
-plt.tight_layout()
+fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+ax[0].plot(index, [abs(i - j) for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
+ax[0].set_title('Absolute Error of Prediction Price')
+ax[1].plot(index, [abs(i - j) / j * 100 for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
+ax[1].set_title('Relative Absolute Error of Prediction Price (in %)')
+_ = [ax[i].tick_params(axis='x', labelrotation=40) for i in [0, 1]]
 st.pyplot(fig)
