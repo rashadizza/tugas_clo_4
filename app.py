@@ -46,18 +46,29 @@ def calculate_volatility(data):
     return annualized_volatility
 
 # GBM simulation function
-def gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data):
+def gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data, num_simulations):
     dt = 1
     actual = [spot_price] + list(data['Adj Close'].iloc[:].values)
     drift = model.predict(scaler.fit_transform(data.loc[:][features]))
-    paths = [spot_price]
-    
-    for i in range(1, time_horizon + 1):
-        if i >= len(data):
-            break
-        paths.append(actual[i] * np.exp((drift[i-1] - 0.5 * (volatility/252)**2) * dt + (volatility/252) * np.random.normal(scale=np.sqrt(1/252))))
+    all_paths = []
 
-    return paths, drift
+    for _ in range(num_simulations):
+        paths = [spot_price]
+        for i in range(1, time_horizon + 1):
+            if i >= len(data):
+                break
+            paths.append(actual[i] * np.exp((drift[i-1] - 0.5 * (volatility/252)**2) * dt + (volatility/252) * np.random.normal(scale=np.sqrt(1/252))))
+        all_paths.append(paths)
+
+    return all_paths, drift
+
+# Calculate confidence intervals
+def calculate_confidence_intervals(paths, confidence_level=0.95):
+    lower_percentile = (1.0 - confidence_level) / 2.0 * 100
+    upper_percentile = (1.0 + confidence_level) / 2.0 * 100
+    lower_bounds = np.percentile(paths, lower_percentile, axis=0)
+    upper_bounds = np.percentile(paths, upper_percentile, axis=0)
+    return lower_bounds, upper_bounds
 
 # Streamlit app
 st.title('Prediksi Harga Saham')
@@ -76,36 +87,66 @@ spot_price = data["Adj Close"].iloc[steps - 1]
 volatility = calculate_volatility(data.iloc[0:steps])
 
 # Sidebar inputs
+num_simulations = st.sidebar.number_input('Number of Simulations', min_value=1, max_value=100, value=5)
 time_horizon = st.sidebar.number_input('Time Horizon (days)', min_value=1, max_value=252, value=252)
 
 # Simulate paths
-simulated_path, drifts = gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data.iloc[steps:])
+simulated_paths, drifts = gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data.iloc[steps:], num_simulations)
 
 # Trim data['Adj Close'] to match simulated_paths length
-actual_prices = data['Adj Close'][steps - 1:steps - 1 + len(simulated_path)].values
+actual_prices = data['Adj Close'][steps - 1:steps - 1 + len(simulated_paths[0])].values
 
 # Evaluate model performance
-mse, r2 = evaluate_performance(simulated_path, actual_prices)
+mse, r2 = evaluate_performance(simulated_paths[0], actual_prices)
 st.write(f"Mean Squared Error (MSE): {mse:.4f}")
 st.write(f"R-squared (R²): {r2:.4f}")
 
-# Plot results
-index = data.index[steps - 1:steps - 1 + len(simulated_path)]
+# Calculate confidence intervals
+all_simulated_paths = np.array(simulated_paths)
+lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.plot(index, simulated_path, label='Simulation', alpha=0.7)
-ax.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
-ax.set_xlabel("Time Step")
-ax.set_ylabel("Stock Price")
-ax.set_title("Simulated vs Actual Stock Price")
-ax.grid(True)
-ax.legend()
+fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+ax[0].plot(index, [abs(i - j) for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
+ax[0].set_title('Absolute Error of Prediction Price')
+ax[1].plot(index, [abs(i - j) / j * 100 for (i, j) in zip(simulated_paths[0], actual_prices)], '.-')
+ax[1].set_title('Relative Absolute Error of Prediction Price (in %)')
+_ = [ax[i].tick_params(axis='x', labelrotation=40) for i in [0, 1]]
 st.pyplot(fig)
 
-fig, ax = plt.subplots(figsize=(10, 6))
-ax.plot(index, [abs(i - j) for (i, j) in zip(simulated_path, actual_prices)], '.-')
-ax.set_title('Absolute Error of Prediction Price')
-ax.set_xlabel("Time Step")
-ax.set_ylabel("Absolute Error")
-ax.grid(True)
+# Plot results
+index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
+
+# Plot simulated and actual stock prices
+plt.figure(figsize=(10, 6))
+plt.plot(index, simulated_paths[0], label='Predicted')
+plt.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
+plt.xlabel("Time Step")
+plt.ylabel("Stock Price")
+plt.title("Simulated vs Actual Stock Price Paths")
+plt.grid(True)
+plt.legend()
+st.pyplot()
+
+# Plot drifts and errors
+labels = ['Predicted Drift', 'Actual Drift', 'Absolute Error']
+fig, ax = plt.subplots(1, 3, figsize=(15, 4))
+ax[0].plot(drifts, label='Predicted Drift')
+ax[0].set_title('Predicted Drift')
+ax[0].set_xlabel('Time Step')
+ax[0].set_ylabel('Drift Value')
+ax[0].legend()
+
+ax[1].plot(data['return'].iloc[steps:].values, label='Actual Drift', color='green')
+ax[1].set_title('Actual Drift')
+ax[1].set_xlabel('Time Step')
+ax[1].set_ylabel('Drift Value')
+ax[1].legend()
+
+ax[2].plot(index, [abs(i - j) for (i, j) in zip(drifts, data['return'].iloc[steps:].values)], '.-')
+ax[2].set_title('Absolute Error of Drift Prediction')
+ax[2].set_xlabel('Time Step')
+ax[2].set_ylabel('Absolute Error')
+ax[2].tick_params(axis='x', rotation=40)
+
+plt.tight_layout()
 st.pyplot(fig)
