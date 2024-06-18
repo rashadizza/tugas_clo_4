@@ -62,7 +62,7 @@ def gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data, 
 
     return all_paths, drift
 
-# Calculate confidence intervals
+# Calculate confidence intervals, monte carlo
 def calculate_confidence_intervals(paths, confidence_level=0.95):
     lower_percentile = (1.0 - confidence_level) / 2.0 * 100
     upper_percentile = (1.0 + confidence_level) / 2.0 * 100
