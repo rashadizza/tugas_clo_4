@@ -130,7 +130,7 @@ index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 
 fig, ax = plt.subplots(figsize=(10, 6))
 for i, path in enumerate(simulated_paths):
-    ax.plot(index, path, label=f'Simulation {i+1}', alpha=0.3)
+    ax.plot(index, path, label=f'Predicted {i+1}', alpha=0.3)
 ax.plot(index, actual_prices, label='Actual', color='black', linewidth=2)
 ax.fill_between(index, lower_bounds, upper_bounds, color='grey', alpha=0.2, label='95% Confidence Interval')
 ax.set_xlabel("Time Step")
