@@ -96,10 +96,10 @@ st.title('Prediksi Harga Saham (ANTM)')
 st.subheader(
   """
   Disusun Oleh Grup 7
-  - a
-  - a
-  - a
-  - a
+  - Rashad Izza Andredi (1301213309)
+  - Rendy Adie Tama (1301213213)
+  - Diva Azty Varissa Azis (1301213357)
+  - Miracle Elizabeth Gabriela (1301210567)
   """
 )
 
