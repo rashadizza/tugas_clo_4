@@ -27,7 +27,7 @@ def load_data():
     data[features] = scaler.fit_transform(data[features])
     return data, features
 
-# Train model function
+# Machine Learning Model Training
 def train_model(data, features, step):
     X = data[features].iloc[:step].values
     y = data["return"].iloc[:step].values
@@ -41,13 +41,13 @@ def evaluate_performance(predicted_prices, actual_prices):
     r2 = r2_score(actual_prices, predicted_prices)
     return mse, r2
 
-# Calculate volatility function
+# Function to calculate annualized standard deviation (volatility)
 def calculate_volatility(data):
     daily_returns = np.log(data["Adj Close"].pct_change() + 1)
     annualized_volatility = daily_returns.std() * np.sqrt(252)
     return annualized_volatility
 
-# GBM simulation function
+# GBM Simulation with Machine Learning Predicted Drift
 def gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data, num_simulations):
     dt = 1
     actual = [spot_price] + list(data['Adj Close'].iloc[:].values)
@@ -96,10 +96,10 @@ st.title('Prediksi Harga Saham (ANTM)')
 st.subheader(
   """
   Disusun Oleh Grup 7
-  - Rashad Izza Andredi (1301213309)
-  - Rendy Adie Tama (1301213213)
-  - Miracle Elizabeth Gabriela (1301210567)
-  - Diva Azty Varissa Azis (1301213357)
+  - a
+  - a
+  - a
+  - a
   """
 )
 
@@ -110,14 +110,15 @@ model = train_model(data, features, steps)
 spot_price = data["Adj Close"].iloc[steps - 1]
 volatility = calculate_volatility(data.iloc[0:steps])
 
-# Sidebar inputs
+# Sidebar
+st.sidebar.header('Parameters')
 num_simulations = st.sidebar.number_input('Number of Simulations', min_value=1, max_value=100, value=5)
 time_horizon = st.sidebar.number_input('Time (days)', min_value=1, max_value=252, value=252)
 
-# Simulate paths
+# Simulation paths
 simulated_paths, drifts = gbm_sim(spot_price, volatility, time_horizon, steps, model, features, data.iloc[steps:], num_simulations)
 
-# Trim data['Adj Close'] to match simulated_paths length
+# Plot predicted paths
 actual_prices = data['Adj Close'][steps - 1:steps - 1 + len(simulated_paths[0])].values
 
 # Evaluate model performance
@@ -150,17 +151,17 @@ st.pyplot(fig)
 all_simulated_paths = np.array(simulated_paths)
 lower_bounds, upper_bounds = calculate_confidence_intervals(all_simulated_paths)
 
-
 # Display predicted prices in a table for all simulations
 st.header('Simulated Stock Price Table')
 results_df = pd.DataFrame(simulated_paths).transpose()
 results_df.columns = [f"Simulation {i+1}" for i in range(num_simulations)]
 st.write(results_df)
 
+# Save results to CSV
 save_results_to_csv(results_df)
 
-st.header('Simulated Stock Price Paths')
 # Plot results with confidence intervals
+st.header('Simulated Stock Price Paths')
 index = data.index[steps - 1:steps - 1 + len(simulated_paths[0])]
 fig, ax = plt.subplots(figsize=(10, 6))
 for i, path in enumerate(simulated_paths):
